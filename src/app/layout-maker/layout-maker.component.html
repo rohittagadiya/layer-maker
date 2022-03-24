@@ -1,0 +1,37 @@
+<div class="main-wrapper">
+    <div class="sidebar-wrapper">
+        <mat-accordion class="headers-align" multi="false">
+            <mat-expansion-panel class="my-3" expanded="true">
+                <mat-expansion-panel-header>
+                    <mat-panel-title style="line-height: 48px;    color: white;">
+                        Canvas size
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="active-tab-content">
+                    <div class="canvas-dimension-wrapper">
+                        <input type="number" [(ngModel)]="canvasWidth" placeholder="width" />
+                        <input type="number" [(ngModel)]="canvasHeight" placeholder="height" />
+                    </div>
+                    <button class="crt-btn" (click)="createCanvas()">Create</button>
+                    <mat-checkbox [(ngModel)]="resize_canvas_during_paste">Resize canvas while pasting image
+                    </mat-checkbox>
+                </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel class="my-3">
+                <mat-expansion-panel-header>
+                    <mat-panel-title style="line-height: 48px;    color: white;">
+                        Add Shapes
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="item-container sticker-item-container three-col margin-bottom">
+                    <div class="item" *ngFor="let shape of BASICSHAPELIST">
+                        <img [src]="shape.thumbnail" (click)="addBasicShape(shape)" alt="" />
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+    <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="canvas" class="shadow canvas-style"></canvas>
+    </div>
+</div>
