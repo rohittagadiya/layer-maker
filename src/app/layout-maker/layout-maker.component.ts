@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { BASICSHAPELIST, CANVASCONFIGOPTIONS, COLORS, FONTSLIST, OBJECTDEFAULTPROPERTIES } from './image.constant';
 
 import { fabric } from 'fabric';
+import { HttpService } from '../services/http.service';
 // import * as $ from "jquery";
+// declare var require: any
+// const fs = require('fs')
 @Component({
   selector: 'app-layout-maker',
   templateUrl: './layout-maker.component.html',
@@ -49,7 +52,14 @@ export class LayoutMakerComponent implements OnInit {
   public figureEditor: boolean = false;
   public shapeEditor: boolean = false;
 
+  formData: any = new FormData();
+  fileList: any;
+  file: any;
+
+  allProducts:any = [];
+
   constructor(
+    public httpService: HttpService
   ) {
     let that = this;
     this.processKeys = function (e: any) {
@@ -144,6 +154,8 @@ export class LayoutMakerComponent implements OnInit {
       }
     };
     // $(window).on('paste', pasteImage);
+
+    this.fetchAllProducts();
   }
 
   ngOnInit() {
@@ -171,6 +183,55 @@ export class LayoutMakerComponent implements OnInit {
     });
 
     this.setCanvasFill('#ffffff');
+  }
+
+  fileChange(event) {
+    if (event.target.files && event.target.files[0]) {
+      var reader = new FileReader();
+      reader.onload = (event: any) => {
+        // this.addOneCategory.logo = event.target.result;
+      }
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    this.fileList = event.target.files;
+    if (this.fileList.length > 0) {
+      this.formData.delete("file");
+      for (let i = 0; i < this.fileList.length; i++) {
+        this.formData.append('file', this.fileList[i]);
+        this.addPhoto();
+      }
+    }
+  }
+
+  addPhoto() {
+      this.httpService.getData('addProductByUser', this.formData, '').then((result: any) => {
+        if (result.code == 200) {
+          // this.getCategory();
+          this.fetchAllProducts();
+        }
+        else if (result.code == 201) {
+          // this.utils.hideLoader();
+          // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
+        }
+        else {
+          // this.utils.hideLoader();
+          // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
+        }
+      }, (err: any) => {
+        // this.utils.hideLoader();
+        // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
+      }).catch((err: any) => {
+        // this.utils.hideLoader();
+        // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
+      });
+    // }
+  }
+
+  fetchAllProducts(){
+    this.httpService.getData1('getProducts',{}).then((result:any) => {
+      console.log("result : ", result)
+      this.allProducts = result.data;
+    })
   }
 
   createCanvas() {
@@ -375,6 +436,55 @@ export class LayoutMakerComponent implements OnInit {
       } else {
       }
     });
+  }
+
+  addImagetoCanvas(image_details) {
+    var id, that = this, img_src=image_details.image;
+    // add image as sticker
+    fabric.util.loadImage(img_src, function (imgObj) {
+      let width = imgObj.width;
+      let height = imgObj.height;
+      let height2, width2;
+      // Image should added in maximum of canvas's 70% area
+      let maxImageWidth = 500 * 70 / 100;
+      let maxImageHeight = 500 * 70 / 100;
+      if (height > maxImageHeight) {
+        let scale = maxImageHeight / height;
+        imgObj.width = imgObj.width * scale;
+        imgObj.height = imgObj.height * scale;
+        height2 = imgObj.height * scale;
+        width2 = imgObj.width * scale;
+        width = imgObj.width;
+      }
+      if (width > maxImageWidth) {
+        let scale = maxImageWidth / width;
+        imgObj.width = imgObj.width * scale;
+        imgObj.height = imgObj.height * scale;
+      }
+      var image = new fabric.Image(imgObj);
+      image.crossOrigin = "anonymous";
+      image.set({
+        left: 10,
+        top: 10,
+        angle: 0,
+        padding: 0,
+        // cornersize: 10,
+        hasRotatingPoint: true,
+      });
+      var customAttribute = {}
+      // image.toObject = (function (toObject) {
+      //   return function () {
+      //     return fabric.util.object.extend(toObject.call(this), customAttribute);
+      //   };
+      // })(image.toObject);
+      // id = that.randomId();
+      // that.extend(image, id);
+      setTimeout(() => {
+        that.canvas.add(image);
+        that.canvas.renderAll();
+      }, 500);
+    }, null);
+    return id;
   }
 
 }

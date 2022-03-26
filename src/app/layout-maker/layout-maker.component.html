@@ -4,7 +4,7 @@
             <mat-expansion-panel class="my-3" expanded="true">
                 <mat-expansion-panel-header>
                     <mat-panel-title style="line-height: 48px;    color: white;">
-                        Canvas size
+                        Map size
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="active-tab-content">
@@ -20,9 +20,24 @@
             <mat-expansion-panel class="my-3">
                 <mat-expansion-panel-header>
                     <mat-panel-title style="line-height: 48px;    color: white;">
+                        Add Products
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <input #fileInput (change)="fileChange($event)" type="file" class="match-parent">
+
+                <div class="item-container sticker-item-container three-col margin-bottom">
+                    <div class="item" *ngFor="let product of allProducts">
+                        <img [src]="product.image" alt="" (click)="addImagetoCanvas(product)" />
+                    </div>
+                </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel class="my-3">
+                <mat-expansion-panel-header>
+                    <mat-panel-title style="line-height: 48px;    color: white;">
                         Add Shapes
                     </mat-panel-title>
                 </mat-expansion-panel-header>
+
                 <div class="item-container sticker-item-container three-col margin-bottom">
                     <div class="item" *ngFor="let shape of BASICSHAPELIST">
                         <img [src]="shape.thumbnail" (click)="addBasicShape(shape)" alt="" />
