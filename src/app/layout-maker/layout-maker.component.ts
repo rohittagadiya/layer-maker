@@ -165,19 +165,19 @@ export class LayoutMakerComponent implements OnInit {
     //setup front side canvas
     this.canvas = new fabric.Canvas('canvas', this.canvasConfigOptions);
 
-    this.canvas2 = document.getElementById("canvasBottom");
-var ctx2 = this.canvas2.getContext("2d");
+//     this.canvas2 = document.getElementById("canvasBottom");
+// var ctx2 = this.canvas2.getContext("2d");
 
-ctx2.beginPath();
-for (var i = 0; i < this.canvas2.width; i += 10) {
-    var y = (i / 100 == parseInt(i / 100)) ? 0 : 10;
-    ctx2.moveTo(i + 15, y);
-    ctx2.lineTo(i + 15, 15);
-    var x = (i / 100 == parseInt(i / 100)) ? 0 : 10;
-    ctx2.moveTo(x, i + 15);
-    ctx2.lineTo(15, i + 15);
-}
-ctx2.stroke();
+// ctx2.beginPath();
+// for (var i = 0; i < this.canvas2.width; i += 10) {
+//     var y = (i / 100 == parseInt(i / 100)) ? 0 : 10;
+//     ctx2.moveTo(i + 15, y);
+//     ctx2.lineTo(i + 15, 15);
+//     var x = (i / 100 == parseInt(i / 100)) ? 0 : 10;
+//     ctx2.moveTo(x, i + 15);
+//     ctx2.lineTo(15, i + 15);
+// }
+// ctx2.stroke();
 
     this.canvas.on({
       'object:added': (e: any) => { },
@@ -197,9 +197,9 @@ ctx2.stroke();
         this.selected = null;
       },
       'mouse:move':(e:any)=> {
-        let  mouseX = parseInt(e.clientX - offsetX);
-    mouseY = parseInt(e.clientY - offsetY);
-    $("#movelog").html("Mouse: " + mouseX + " / " + mouseY);
+    //     let  mouseX = parseInt(e.clientX - offsetX);
+    // mouseY = parseInt(e.clientY - offsetY);
+    // $("#movelog").html("Mouse: " + mouseX + " / " + mouseY);
       }
     });
 
