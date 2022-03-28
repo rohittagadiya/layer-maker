@@ -457,6 +457,11 @@ export const CANVASCONFIGOPTIONS = {
   // isDrawingMode: true
   // imageSmoothingEnabled: true,
   enableRetinaScaling: true,
+  "rulers": {
+    "enabled": true,
+    "unit": "inch",
+    "origin": { "X": 0, "Y": 0 }
+}
 };
 
 export const FONTSLIST = [

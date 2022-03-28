@@ -16,6 +16,7 @@ export class LayoutMakerComponent implements OnInit {
   // @BlockUI('editorBlock') blockUI: NgBlockUI;
   public context: any;
   public canvas: any;
+  public canvas2: any;
   canvasWidth: number;
   canvasHeight: number;
   resize_canvas_during_paste: boolean = false;
@@ -65,7 +66,8 @@ export class LayoutMakerComponent implements OnInit {
     this.processKeys = function (e: any) {
       if (that.selected) {
         let movementDelta = 5;
-        if (e.keyCode === 46) {
+        console.log("e.keyCode : ", e.keyCode);
+        if (e.keyCode === 46 || e.keyCode === 8) {
           // delete || backspace e.keyCode === 8;
           e.preventDefault();
           that.removeSelected();
@@ -163,6 +165,20 @@ export class LayoutMakerComponent implements OnInit {
     //setup front side canvas
     this.canvas = new fabric.Canvas('canvas', this.canvasConfigOptions);
 
+    this.canvas2 = document.getElementById("canvasBottom");
+var ctx2 = this.canvas2.getContext("2d");
+
+ctx2.beginPath();
+for (var i = 0; i < this.canvas2.width; i += 10) {
+    var y = (i / 100 == parseInt(i / 100)) ? 0 : 10;
+    ctx2.moveTo(i + 15, y);
+    ctx2.lineTo(i + 15, 15);
+    var x = (i / 100 == parseInt(i / 100)) ? 0 : 10;
+    ctx2.moveTo(x, i + 15);
+    ctx2.lineTo(15, i + 15);
+}
+ctx2.stroke();
+
     this.canvas.on({
       'object:added': (e: any) => { },
       'object:selected': (e: any) => {
@@ -172,17 +188,26 @@ export class LayoutMakerComponent implements OnInit {
         this.applySelectionOnObj();
       },
       'selection:created': (e: any) => {
-        this.selected = e.target;
-        console.log(this.selected);
+        console.log(e);
+        this.selected = e.selected;
         this.layerSelected = JSON.parse(JSON.stringify(this.selected));
         this.applySelectionOnObj();
       },
       'selection:cleared': (e: any) => {
         this.selected = null;
       },
+      'mouse:move':(e:any)=> {
+        let  mouseX = parseInt(e.clientX - offsetX);
+    mouseY = parseInt(e.clientY - offsetY);
+    $("#movelog").html("Mouse: " + mouseX + " / " + mouseY);
+      }
     });
 
     this.setCanvasFill('#ffffff');
+
+    setTimeout(() => {
+      console.log("this.canvasDimension : ", this.canvasDimension);
+    }, 3000);
   }
 
   fileChange(event) {
@@ -239,10 +264,14 @@ export class LayoutMakerComponent implements OnInit {
     this.canvas.setHeight(this.canvasHeight);
   }
 
+  get canvasDimension():object {
+    return {width: this.canvas.width,height: this.canvas.height}
+  }
+
   extend(obj: any, id: any) {
     obj.toObject = (function (toObject) {
       return function () {
-        return fabric.util.object.extend(toObject.call(), {
+        return fabric.util.object.extend(toObject.call(self), {
           id: id,
         });
       };
@@ -263,6 +292,7 @@ export class LayoutMakerComponent implements OnInit {
   }
 
   removeSelected() {
+    console.log("Here")
     let activeObject = this.canvas.getActiveObject(),
       activeGroup = this.canvas.getActiveObjects();
     if (activeObject) {

@@ -47,6 +47,24 @@
         </mat-accordion>
     </div>
     <div class="canvas-wrapper" id="canvas-wrapper">
+        <div>
+           <!--  <table class="table">
+                <thead>
+                    <tr>
+                        <th>Height</th>
+                        <th>Width</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{canvas.width}}</td>
+                        <td>{{canvas.height}}</td>
+                    </tr>
+                </tbody> 
+            </table>-->
+            <p class="mb-0">{{canvas.width}} X {{canvas.height}} PX</p>
+        </div>
+        <canvas id="canvasBottom" class="shadow canvas-style"></canvas>
         <canvas id="canvas" class="shadow canvas-style"></canvas>
     </div>
 </div>
