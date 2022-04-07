@@ -1,26 +1,35 @@
-import { Component, OnInit } from '@angular/core';
-import { BASICSHAPELIST, CANVASCONFIGOPTIONS, COLORS, FONTSLIST, OBJECTDEFAULTPROPERTIES } from './image.constant';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  BASICSHAPELIST,
+  CANVASCONFIGOPTIONS,
+  COLORS,
+  FONTSLIST,
+  OBJECTDEFAULTPROPERTIES,
+} from './image.constant';
 
 import { fabric } from 'fabric';
+import 'fabric-history';
 import { HttpService } from '../services/http.service';
-// import * as $ from "jquery";
-// declare var require: any
-// const fs = require('fs')
+import * as $ from 'jquery';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { UploadProductComponent } from '../modals/upload-product/upload-product.component';
+
+fabric.Object.prototype.set(OBJECTDEFAULTPROPERTIES);
 @Component({
   selector: 'app-layout-maker',
   templateUrl: './layout-maker.component.html',
-  styleUrls: ['./layout-maker.component.scss']
+  styleUrls: ['./layout-maker.component.scss'],
 })
 export class LayoutMakerComponent implements OnInit {
-
-  // @BlockUI('editorBlock') blockUI: NgBlockUI;
   public context: any;
   public canvas: any;
   public canvas2: any;
   canvasWidth: number;
   canvasHeight: number;
   resize_canvas_during_paste: boolean = false;
+  paste_new_object_below: boolean = false;
   canvasObjectList: any = [];
+  productTypes: any = [];
   layerSelected: any;
 
   canvasConfigOptions = CANVASCONFIGOPTIONS;
@@ -57,20 +66,51 @@ export class LayoutMakerComponent implements OnInit {
   fileList: any;
   file: any;
 
-  allProducts:any = [];
+  width: any = 0;
+  height: any = 0;
+  sizeType: any = 'px';
 
-  constructor(
-    public httpService: HttpService
-  ) {
+  allformatSizes: any = {
+    px: {
+      width: 0,
+      height: 0,
+    },
+    in: {
+      width: 0,
+      height: 0,
+    },
+    cm: {
+      width: 0,
+      height: 0,
+    },
+    mm: {
+      width: 0,
+      height: 0,
+    },
+  };
+
+  allProducts: any = [];
+
+  // @ViewChild('AddProductModal', { static: false }) private content;
+  @ViewChild('AddProductModal') content: ElementRef;
+
+  constructor(public httpService: HttpService, private modalService: NgbModal) {
     let that = this;
     this.processKeys = function (e: any) {
       if (that.selected) {
         let movementDelta = 5;
-        console.log("e.keyCode : ", e.keyCode);
+        console.log('e.keyCode : ', e.keyCode);
         if (e.keyCode === 46 || e.keyCode === 8) {
           // delete || backspace e.keyCode === 8;
           e.preventDefault();
           that.removeSelected();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.keyCode === 67) {
+          // ctrl + c
+          console.log('C');
+          e.preventDefault();
+          that.clone();
         }
 
         if (e.keyCode === 27) {
@@ -82,28 +122,28 @@ export class LayoutMakerComponent implements OnInit {
         if (e.keyCode === 38) {
           // UP ARROW
           e.preventDefault();
-          that.selected.top -= movementDelta;
+          that.selected[0].top -= movementDelta;
           that.canvas.renderAll();
         }
 
         if (e.keyCode === 40) {
           // DOWN ARROW
           e.preventDefault();
-          that.selected.top += movementDelta;
+          that.selected[0].top += movementDelta;
           that.canvas.renderAll();
         }
 
         if (e.keyCode === 37) {
           // LEFT ARROW
           e.preventDefault();
-          that.selected.left -= movementDelta;
+          that.selected[0].left -= movementDelta;
           that.canvas.renderAll();
         }
 
         if (e.keyCode === 39) {
           // RIGHT ARROW
           e.preventDefault();
-          that.selected.left += movementDelta;
+          that.selected[0].left += movementDelta;
           that.canvas.renderAll();
         }
       }
@@ -161,26 +201,11 @@ export class LayoutMakerComponent implements OnInit {
   }
 
   ngOnInit() {
-    // fabric.Object.prototype.set(this.objectPrototypeDefaults) Partial<Details>;
     //setup front side canvas
     this.canvas = new fabric.Canvas('canvas', this.canvasConfigOptions);
 
-//     this.canvas2 = document.getElementById("canvasBottom");
-// var ctx2 = this.canvas2.getContext("2d");
-
-// ctx2.beginPath();
-// for (var i = 0; i < this.canvas2.width; i += 10) {
-//     var y = (i / 100 == parseInt(i / 100)) ? 0 : 10;
-//     ctx2.moveTo(i + 15, y);
-//     ctx2.lineTo(i + 15, 15);
-//     var x = (i / 100 == parseInt(i / 100)) ? 0 : 10;
-//     ctx2.moveTo(x, i + 15);
-//     ctx2.lineTo(15, i + 15);
-// }
-// ctx2.stroke();
-
     this.canvas.on({
-      'object:added': (e: any) => { },
+      'object:added': (e: any) => {},
       'object:selected': (e: any) => {
         this.selected = e.target;
         console.log(this.selected);
@@ -188,25 +213,22 @@ export class LayoutMakerComponent implements OnInit {
         this.applySelectionOnObj();
       },
       'selection:created': (e: any) => {
-        console.log(e);
         this.selected = e.selected;
         this.layerSelected = JSON.parse(JSON.stringify(this.selected));
+        console.log(JSON.parse(JSON.stringify(this.selected[0])));
         this.applySelectionOnObj();
       },
       'selection:cleared': (e: any) => {
         this.selected = null;
       },
-      'mouse:move':(e:any)=> {
-    //     let  mouseX = parseInt(e.clientX - offsetX);
-    // mouseY = parseInt(e.clientY - offsetY);
-    // $("#movelog").html("Mouse: " + mouseX + " / " + mouseY);
-      }
+      'mouse:move': (e: any) => {},
     });
 
     this.setCanvasFill('#ffffff');
 
     setTimeout(() => {
-      console.log("this.canvasDimension : ", this.canvasDimension);
+      console.log('this.canvasDimension : ', this.canvasDimension);
+      this.drawRuler();
     }, 3000);
   }
 
@@ -215,12 +237,12 @@ export class LayoutMakerComponent implements OnInit {
       var reader = new FileReader();
       reader.onload = (event: any) => {
         // this.addOneCategory.logo = event.target.result;
-      }
+      };
       reader.readAsDataURL(event.target.files[0]);
     }
     this.fileList = event.target.files;
     if (this.fileList.length > 0) {
-      this.formData.delete("file");
+      this.formData.delete('file');
       for (let i = 0; i < this.fileList.length; i++) {
         this.formData.append('file', this.fileList[i]);
         this.addPhoto();
@@ -228,44 +250,398 @@ export class LayoutMakerComponent implements OnInit {
     }
   }
 
+  drawRuler() {
+    var grid = 20;
+    var width = this.canvas.width;
+    var measurementThickness = 60;
+    this.canvas.add(
+      new fabric.Rect({
+        left: 0,
+        top: 0,
+        fill: '#DDD',
+        selectable: false,
+        width: measurementThickness,
+        height: this.canvas.height,
+      })
+    );
+
+    this.canvas.add(
+      new fabric.Rect({
+        left: 0,
+        top: 0,
+        fill: '#DDD',
+        width: this.canvas.width,
+        selectable: false,
+        height: measurementThickness,
+      })
+    );
+
+    var tickSize = 10;
+    var tickSizeFoot = 40;
+
+    // Drag grid
+    var count = 0;
+    var footCount = 0;
+
+    for (var i = 0; i < width / grid; i++) {
+      var offset = i * grid,
+        location1 = offset + measurementThickness,
+        isFoot = (i + 1) % 12 === 0 && i !== 0;
+
+      // Grid ------------
+
+      // vertical
+      this.canvas.add(
+        new fabric.Line([location1, measurementThickness, location1, width], {
+          stroke: isFoot ? '#888' : '#ccc',
+          selectable: false,
+        })
+      );
+
+      // horizontal
+      this.canvas.add(
+        new fabric.Line([measurementThickness, location1, width, location1], {
+          stroke: isFoot ? '#888' : '#ccc',
+          selectable: false,
+        })
+      );
+
+      // Ruler ------------
+
+      // left
+      this.canvas.add(
+        new fabric.Line(
+          [
+            measurementThickness - tickSize,
+            location1,
+            measurementThickness,
+            location1,
+          ],
+          { stroke: '#888', selectable: false }
+        )
+      );
+      this.canvas.add(
+        new fabric.Text(count + '"', {
+          left: measurementThickness - tickSize * 2 - 7,
+          top: location1,
+          fontSize: 12,
+          fontFamily: 'san-serif',
+        })
+      );
+
+      if (isFoot) {
+        footCount++;
+
+        this.canvas.add(
+          new fabric.Line(
+            [
+              measurementThickness - tickSizeFoot,
+              location1,
+              measurementThickness,
+              location1,
+            ],
+            { stroke: '#222', selectable: false }
+          )
+        );
+        this.canvas.add(
+          new fabric.Text(footCount + "'", {
+            left: measurementThickness - tickSizeFoot - 7,
+            top: location1 + 4,
+            fontSize: 12,
+            fontFamily: 'san-serif',
+          })
+        );
+      }
+
+      // top
+      this.canvas.add(
+        new fabric.Line(
+          [
+            location1,
+            measurementThickness - tickSize,
+            location1,
+            measurementThickness,
+          ],
+          { stroke: '#888', selectable: false }
+        )
+      );
+      this.canvas.add(
+        new fabric.Text(count + '"', {
+          left: location1,
+          top: measurementThickness - tickSize * 2 - 4,
+          fontSize: 12,
+          fontFamily: 'san-serif',
+        })
+      );
+
+      if (isFoot) {
+        this.canvas.add(
+          new fabric.Line(
+            [
+              location1,
+              measurementThickness - tickSizeFoot,
+              location1,
+              measurementThickness,
+            ],
+            { stroke: '#222', selectable: false }
+          )
+        );
+        this.canvas.add(
+          new fabric.Text(footCount + "'", {
+            left: location1 + 4,
+            top: measurementThickness - tickSizeFoot - 7,
+            fontSize: 12,
+            fontFamily: 'san-serif',
+          })
+        );
+      }
+
+      count++;
+    }
+  }
+
   addPhoto() {
-      this.httpService.getData('addProductByUser', this.formData, '').then((result: any) => {
-        if (result.code == 200) {
-          // this.getCategory();
-          this.fetchAllProducts();
+    // this.content.show()
+    this.modalService
+      .open(UploadProductComponent, { ariaLabelledBy: 'modal-basic-title' })
+      .result.then(
+        (result) => {
+          console.log('CLOSED', result);
+          if (result?.height) {
+            var request_data = {
+              height: result.height,
+              width: result.width,
+              type: result.type,
+            };
+            this.formData.append('request_data', JSON.stringify(request_data));
+            this.httpService
+              .getData('addProductByUser', this.formData, '')
+              .then(
+                (result: any) => {
+                  if (result.code == 200) {
+                    // this.getCategory();
+                    this.fetchAllProducts();
+                  } else if (result.code == 201) {
+                    // this.utils.hideLoader();
+                    // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
+                  } else {
+                    // this.utils.hideLoader();
+                    // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
+                  }
+                },
+                (err: any) => {
+                  // this.utils.hideLoader();
+                  // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
+                }
+              )
+              .catch((err: any) => {
+                // this.utils.hideLoader();
+                // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
+              });
+          }
+          // this.closeResult = `Closed with: ${result}`;
+        },
+        (reason) => {
+          // this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
         }
-        else if (result.code == 201) {
-          // this.utils.hideLoader();
-          // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
-        }
-        else {
-          // this.utils.hideLoader();
-          // this.utils.sweetAlertError({ title: "", message: result.message, icon: 'error', second: TIMER.LONG });
-        }
-      }, (err: any) => {
-        // this.utils.hideLoader();
-        // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
-      }).catch((err: any) => {
-        // this.utils.hideLoader();
-        // this.utils.sweetAlertError({ title: "", message: ERROR.SERVER_INTERNET_ERR, icon: 'error', second: TIMER.MEDIUM });
-      });
+      );
+    // <HTMLElement>document.getElementById("openModalButton").click();
+    // $('#AddProductModal').modal('show');
     // }
   }
 
-  fetchAllProducts(){
-    this.httpService.getData1('getProducts',{}).then((result:any) => {
-      console.log("result : ", result)
+  fetchAllProducts() {
+    this.httpService.getData1('getProducts', {}).then((result: any) => {
       this.allProducts = result.data;
-    })
+    });
   }
 
-  createCanvas() {
+  createCanvas(allformatSizes, sizeType) {
+    this.canvas.clear();
+    this.canvasWidth = allformatSizes.px.width;
+    this.canvasHeight = allformatSizes.px.height;
     this.canvas.setWidth(this.canvasWidth);
     this.canvas.setHeight(this.canvasHeight);
+    this.drawRuler();
   }
 
-  get canvasDimension():object {
-    return {width: this.canvas.width,height: this.canvas.height}
+  async clone() {
+    console.log('IN FUNCTION');
+    let activeObject = this.canvas.getActiveObject();
+      // activeGroup = this.canvas.getActiveGroup();
+    let cloneobject
+    if (activeObject) {
+      cloneobject = fabric.util.object.clone(activeObject);
+      console.log("cloneobject : ",cloneobject, cloneobject.left, cloneobject.width, cloneobject.top);
+
+      let left,top;
+
+      if (this.paste_new_object_below) {
+        left = cloneobject.left , 
+        top = cloneobject.top+ (cloneobject.height * cloneobject.scaleY)
+      }else {
+        left = cloneobject.left + (cloneobject.width * cloneobject.scaleX), 
+        top = cloneobject.top
+      }
+
+
+      cloneobject.set({
+        left: left,
+        top: top,
+        // angle: cloneobject.angle
+      });
+      // cloneobject.left= cloneobject.left + cloneobject.width;
+      // cloneobject.top= cloneobject.top;
+      this.canvas.add(cloneobject);
+      this.rotateObjAfterAdded(cloneobject, cloneobject.angle);
+      this.canvas.renderAll.bind(this.canvas);
+    }
+  }
+
+  rotateObjAfterAdded(object, angle) {
+    object.rotate(angle);
+    object.setCoords();
+}
+
+
+
+  // convertAllSizeFirst(item) {
+  //   switch (item.sizeType) {
+  //     case 'px':
+  //       this.createCanvas({ 'width': item.width, 'height': item.height, 'display_height': item.height, 'display_width': item.width, 'displaySizeType': item.sizeType }, item.chart_type_index);
+  //       break;
+  //     case 'cm':
+  //       this.createCanvas({ 'width': this.utils.convertCmToPx(item.width), 'height': this.utils.convertCmToPx(item.height), 'display_height': item.height, 'display_width': item.width, 'displaySizeType': item.sizeType }, item.chart_type_index);
+  //       break;
+  //     case 'in':
+  //       this.createCanvas({ 'width': this.utils.convertInToPx(item.width), 'height': this.utils.convertInToPx(item.height), 'display_height': item.height, 'display_width': item.width, 'displaySizeType': item.sizeType }, item.chart_type_index);
+  //       break;
+  //     case 'mm':
+  //       this.createCanvas({ 'width': this.utils.convertMmToPx(item.width), 'height': this.utils.convertMmToPx(item.height), 'display_height': item.height, 'display_width': item.width, 'displaySizeType': item.sizeType }, item.chart_type_index);
+  //       break;
+  //   }
+  // }
+
+  convertAllValue(width, height, current) {
+    switch (current) {
+      case 'px':
+        this.allformatSizes.px.width = width;
+        this.allformatSizes.px.height = height;
+        this.allformatSizes.cm.width = this.convertPxToCm(width);
+        this.allformatSizes.cm.height = this.convertPxToCm(height);
+        this.allformatSizes.in.width = this.convertPxToIn(width);
+        this.allformatSizes.in.height = this.convertPxToIn(height);
+        this.allformatSizes.mm.width = this.convertPxToMm(width);
+        this.allformatSizes.mm.height = this.convertPxToMm(height);
+        break;
+      case 'cm':
+        this.allformatSizes.cm.width = width;
+        this.allformatSizes.cm.height = height;
+        this.allformatSizes.px.width = this.convertCmToPx(width);
+        this.allformatSizes.px.height = this.convertCmToPx(height);
+        this.allformatSizes.in.width = this.convertCmToIn(width);
+        this.allformatSizes.in.height = this.convertCmToIn(height);
+        this.allformatSizes.mm.width = this.convertCmToMm(width);
+        this.allformatSizes.mm.height = this.convertCmToMm(height);
+        break;
+      case 'in':
+        this.allformatSizes.in.width = width;
+        this.allformatSizes.in.height = height;
+        this.allformatSizes.px.width = this.convertInToPx(width);
+        this.allformatSizes.px.height = this.convertInToPx(height);
+        this.allformatSizes.cm.width = this.convertInToCm(width);
+        this.allformatSizes.cm.height = this.convertInToCm(height);
+        this.allformatSizes.mm.width = this.convertInToMm(width);
+        this.allformatSizes.mm.height = this.convertInToMm(height);
+        break;
+      case 'mm':
+        this.allformatSizes.mm.width = width;
+        this.allformatSizes.mm.height = height;
+        this.allformatSizes.px.width = this.convertMmToPx(width);
+        this.allformatSizes.px.height = this.convertMmToPx(height);
+        this.allformatSizes.cm.width = this.convertMmToCm(width);
+        this.allformatSizes.cm.height = this.convertMmToCm(height);
+        this.allformatSizes.in.width = this.convertMmToIn(width);
+        this.allformatSizes.in.height = this.convertMmToIn(height);
+        break;
+    }
+  }
+
+  changeSizeType(type) {
+    switch (type) {
+      case 'px':
+        this.width = this.allformatSizes.px.width;
+        this.height = this.allformatSizes.px.height;
+        break;
+      case 'cm':
+        this.width = this.allformatSizes.cm.width;
+        this.height = this.allformatSizes.cm.height;
+        break;
+      case 'in':
+        this.width = this.allformatSizes.in.width;
+        this.height = this.allformatSizes.in.height;
+        break;
+      case 'mm':
+        this.width = this.allformatSizes.mm.width;
+        this.height = this.allformatSizes.mm.height;
+        break;
+    }
+  }
+
+  // pixel to other
+  convertPxToIn(value): Number {
+    return value ? Number((value / 300).toFixed(2)) : 0;
+  }
+
+  convertPxToCm(value): Number {
+    return value ? Number(((value * 2.54) / 300).toFixed(2)) : 0;
+  }
+
+  convertPxToMm(value): Number {
+    return value ? Number(((value * 25.4) / 300).toFixed(2)) : 0;
+  }
+
+  // centimeter to other
+  convertCmToPx(value): Number {
+    return value ? Math.floor((value * 300) / 2.54) : 0;
+  }
+
+  convertCmToIn(value): Number {
+    return value ? Number((value / 2.54).toFixed(2)) : 0;
+  }
+
+  convertCmToMm(value): Number {
+    return value ? Number((value * 10).toFixed(2)) : 0;
+  }
+
+  // inch to other
+  convertInToPx(value): Number {
+    return value ? Math.floor(value * 300) : 0;
+  }
+
+  convertInToCm(value): Number {
+    return value ? Number((value * 2.54).toFixed(2)) : 0;
+  }
+
+  convertInToMm(value): Number {
+    return value ? Number((value * 25.4).toFixed(2)) : 0;
+  }
+
+  // mm to other
+  convertMmToPx(value): Number {
+    return value ? Math.floor((value * 300) / 25.4) : 0;
+  }
+
+  convertMmToCm(value): Number {
+    return value ? Number((value / 10).toFixed(2)) : 0;
+  }
+
+  convertMmToIn(value): Number {
+    return value ? Number((value / 25.4).toFixed(2)) : 0;
+  }
+
+  get canvasDimension(): object {
+    return { width: this.canvas.width, height: this.canvas.height };
   }
 
   extend(obj: any, id: any) {
@@ -292,7 +668,7 @@ export class LayoutMakerComponent implements OnInit {
   }
 
   removeSelected() {
-    console.log("Here")
+    console.log('Here');
     let activeObject = this.canvas.getActiveObject(),
       activeGroup = this.canvas.getActiveObjects();
     if (activeObject) {
@@ -329,7 +705,7 @@ export class LayoutMakerComponent implements OnInit {
         if (shape.shadow) {
           // circle.setShadow(shape.shadow);
         }
-        this.extend(circle, this.randomId());
+        // this.extend(circle, this.randomId());
         this.canvas.add(circle);
         break;
       case 'Rect':
@@ -350,7 +726,7 @@ export class LayoutMakerComponent implements OnInit {
         if (shape.shadow) {
           // rect.setShadow(shape.shadow);
         }
-        this.extend(rect, this.randomId());
+        // this.extend(rect, this.randomId());
         this.canvas.add(rect);
         break;
       case 'Line':
@@ -364,7 +740,7 @@ export class LayoutMakerComponent implements OnInit {
         option['top'] = 100;
         option['left'] = 100;
         var line = new fabric.Line(shape.coOrds, option);
-        this.extend(line, this.randomId());
+        // this.extend(line, this.randomId());
         this.canvas.add(line);
         break;
     }
@@ -469,52 +845,109 @@ export class LayoutMakerComponent implements OnInit {
   }
 
   addImagetoCanvas(image_details) {
-    var id, that = this, img_src=image_details.image;
+    var id,
+      that = this,
+      img_src = image_details.image;
     // add image as sticker
-    fabric.util.loadImage(img_src, function (imgObj) {
-      let width = imgObj.width;
-      let height = imgObj.height;
-      let height2, width2;
-      // Image should added in maximum of canvas's 70% area
-      let maxImageWidth = 500 * 70 / 100;
-      let maxImageHeight = 500 * 70 / 100;
-      if (height > maxImageHeight) {
-        let scale = maxImageHeight / height;
-        imgObj.width = imgObj.width * scale;
-        imgObj.height = imgObj.height * scale;
-        height2 = imgObj.height * scale;
-        width2 = imgObj.width * scale;
-        width = imgObj.width;
-      }
-      if (width > maxImageWidth) {
-        let scale = maxImageWidth / width;
-        imgObj.width = imgObj.width * scale;
-        imgObj.height = imgObj.height * scale;
-      }
-      var image = new fabric.Image(imgObj);
-      image.crossOrigin = "anonymous";
-      image.set({
-        left: 10,
-        top: 10,
-        angle: 0,
-        padding: 0,
-        // cornersize: 10,
-        hasRotatingPoint: true,
-      });
-      var customAttribute = {}
-      // image.toObject = (function (toObject) {
-      //   return function () {
-      //     return fabric.util.object.extend(toObject.call(this), customAttribute);
-      //   };
-      // })(image.toObject);
-      // id = that.randomId();
-      // that.extend(image, id);
-      setTimeout(() => {
-        that.canvas.add(image);
-        that.canvas.renderAll();
-      }, 500);
-    }, null);
+    fabric.util.loadImage(
+      img_src,
+      function (imgObj) {
+        let width = imgObj.width;
+        let height = imgObj.height;
+        // Image should added in maximum of canvas's 70% area
+        let maxImageWidth = (that.canvas.width * 70) / 100;
+        let maxImageHeight = (that.canvas.height * 70) / 100;
+        console.log(
+          'height > maxImageHeight : ',
+          height,
+          maxImageHeight,
+          (that.canvas.width * 70) / 100
+        );
+        // if (height > maxImageHeight) {
+        //   console.log("IF 1")
+        //   let scale = maxImageHeight / height;
+        //   imgObj.width = imgObj.width * scale;
+        //   imgObj.height = imgObj.height * scale;
+        //   width = imgObj.width;
+        // }
+        // console.log("width > maxImageWidth : ", width , maxImageWidth)
+        // if (width > maxImageWidth) {
+        //   console.log("IF 1=2")
+
+        // let scale = maxImageWidth / width;
+        // imgObj.width = imgObj.width * scale;
+        // imgObj.height = imgObj.height * scale;
+        imgObj.width = image_details.width;
+        imgObj.height = image_details.height;
+        // }
+        var image = new fabric.Image(imgObj);
+        image.crossOrigin = 'anonymous';
+        image.set({
+          left: 60,
+          top: 60,
+          angle: 0,
+          padding: 0,
+          // cornersize: 10,
+          hasRotatingPoint: true,
+          // width: image_details.width,
+          // height: image_details.height
+        });
+        image.scaleToHeight(image_details.height);
+        image.scaleToWidth(image_details.width);
+        var customAttribute = {};
+        image.toObject = function () {
+          return {
+            product_type: image_details.product_type,
+          };
+        };
+        // image.toObject = (function (toObject) {
+        //   return function () {
+        //     return fabric.util.object.extend(toObject.call(this), customAttribute);
+        //   };
+        // })(image.toObject);
+        // id = that.randomId();
+        that.extend(image, id);
+        setTimeout(() => {
+          that.canvas.add(image);
+          that.canvas.renderAll();
+          console.log(that.canvas);
+        }, 500);
+      },
+      null
+    );
     return id;
   }
 
+  getProductCount() {
+    let objects = this.canvas.toJSON().objects;
+    // console.log("objects : ", objects, this.canvas.toJSON());
+    this.productTypes = [];
+    var tempTypes: any = [];
+    for (let i = 0; i < objects.length; i++) {
+      const element = objects[i];
+      if (element?.product_type) {
+        tempTypes.push(element.product_type);
+      }
+    }
+
+    var count = {};
+    tempTypes.forEach(function (i) {
+      count[i] = (count[i] || 0) + 1;
+    });
+    console.log(count);
+    let t: any,
+      key,
+      credit_note: any = [];
+    for (let tag in count) {
+      t = {
+        key: tag,
+        value: count[tag],
+      };
+      this.productTypes.push(t);
+    }
+    console.log(this.productTypes);
+    // var result = Object.keys(count).map((key) => [{type: key, count : count[key]}]);
+
+    // console.log(result);
+  }
 }

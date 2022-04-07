@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 })
 export class HttpService {
 
-  public apiurl: any = 'http://localhost/layer-maker/public/api/';
+  public apiurl: any = 'http://localhost/layer-maker-be/public/api/';
 
   constructor(public http: HttpClient, private router: Router) { }
 

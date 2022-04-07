@@ -7,15 +7,19 @@ import { LayoutMakerComponent } from './layout-maker/layout-maker.component';
 
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { UploadProductComponent } from './modals/upload-product/upload-product.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LayoutMakerComponent
+    LayoutMakerComponent,
+    UploadProductComponent
   ],
   imports: [
     BrowserModule,
@@ -25,7 +29,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     MatExpansionModule,
     FormsModule,
     HttpClientModule,
-    NgbModule
+    NgbModule,
+    NgbAlertModule,
+    MatFormFieldModule,
+    MatSelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]

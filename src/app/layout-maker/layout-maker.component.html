@@ -1,23 +1,39 @@
 <div class="main-wrapper">
     <div class="sidebar-wrapper">
         <mat-accordion class="headers-align" multi="false">
-            <mat-expansion-panel class="my-3" expanded="true">
+            <mat-expansion-panel class="my-2" expanded="true">
                 <mat-expansion-panel-header>
                     <mat-panel-title style="line-height: 48px;    color: white;">
                         Map size
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="active-tab-content">
-                    <div class="canvas-dimension-wrapper">
+                    <div class="m-auto">
+                        <div class="d-flex flex-nowrap justify-content-between align-items-center canvas-dimension-wrapper">
+                            <input type="number" placeholder="Width" id="cn_wdth_inpt" class="create-new-box" [(ngModel)]="width" (keyup.enter)="createCanvas(allformatSizes, sizeType)" (input)="convertAllValue(width, height, sizeType)">
+                            <span class="create-new-cross">x</span>
+                            <input type="number" placeholder="Height" id="cn_hght_inpt" class="create-new-box" [(ngModel)]="height" (keyup.enter)="createCanvas(allformatSizes, sizeType)" (input)="convertAllValue(width, height, sizeType)">
+                        </div>
+                        <div class="my-3">
+                            <select class="size-dropdown" id="cn_sizeop" [(ngModel)]="sizeType" (change)="changeSizeType(sizeType)">
+                            <option value="px">Pixels</option>
+                            <option value="cm">Centimeters</option>
+                            <option value="in">Inches</option>
+                            <option value="mm">Millimeters</option>
+                          </select>
+                        </div>
+                        <button class="crt-btn" id="cn_crte_btn" (click)="createCanvas(allformatSizes, sizeType)">Create</button>
+                    </div>
+                    <!-- <div class="canvas-dimension-wrapper">
                         <input type="number" [(ngModel)]="canvasWidth" placeholder="width" />
                         <input type="number" [(ngModel)]="canvasHeight" placeholder="height" />
                     </div>
-                    <button class="crt-btn" (click)="createCanvas()">Create</button>
-                    <mat-checkbox [(ngModel)]="resize_canvas_during_paste">Resize canvas while pasting image
-                    </mat-checkbox>
+                    <button class="crt-btn" (click)="createCanvas(allformatSizes, sizeType)">Create</button> -->
+                    <!-- <mat-checkbox [(ngModel)]="resize_canvas_during_paste">Resize canvas while pasting image
+                    </mat-checkbox> -->
                 </div>
             </mat-expansion-panel>
-            <mat-expansion-panel class="my-3">
+            <mat-expansion-panel class="my-2">
                 <mat-expansion-panel-header>
                     <mat-panel-title style="line-height: 48px;    color: white;">
                         Add Products
@@ -31,7 +47,7 @@
                     </div>
                 </div>
             </mat-expansion-panel>
-            <mat-expansion-panel class="my-3">
+            <mat-expansion-panel class="my-2">
                 <mat-expansion-panel-header>
                     <mat-panel-title style="line-height: 48px;    color: white;">
                         Add Shapes
@@ -48,23 +64,50 @@
     </div>
     <div class="canvas-wrapper" id="canvas-wrapper">
         <div>
-           <!--  <table class="table">
-                <thead>
-                    <tr>
-                        <th>Height</th>
-                        <th>Width</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{canvas.width}}</td>
-                        <td>{{canvas.height}}</td>
-                    </tr>
-                </tbody> 
-            </table>-->
             <p class="mb-0">{{canvas.width}} X {{canvas.height}} PX</p>
         </div>
-        <canvas id="canvasBottom" class="shadow canvas-style"></canvas>
         <canvas id="canvas" class="shadow canvas-style"></canvas>
     </div>
+    <div class="right-wrapper">
+        <button class="btn btn-primary" (click)="getProductCount()">Get Products</button>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product type</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let product of productTypes">
+                    <td>{{product.key}}</td>
+                    <td>{{product.value}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <mat-checkbox [(ngModel)]="paste_new_object_below">Copy new element below
+        </mat-checkbox>
+    </div>
 </div>
+
+<ng-template #content>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title" id="modal-basic-title">Profile update</h4>
+            <!-- <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button> -->
+        </div>
+        <div class="modal-body">
+            <!-- <form>
+            <div class="mb-3">
+                <label for="dateOfBirth">Date of birth</label>
+                <div class="input-group">
+                    <input id="dateOfBirth" class="form-control" placeholder="yyyy-mm-dd" name="dp" ngbDatepicker #dp="ngbDatepicker">
+                    <button class="btn btn-outline-secondary calendar" (click)="dp.toggle()" type="button"></button>
+                </div>
+            </div>
+        </form> -->
+        </div>
+        <div class="modal-footer">
+            <!-- <button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Save</button> -->
+        </div>
+    </div>
+</ng-template>

@@ -424,19 +424,18 @@ export const BASICSHAPELIST = [
 
 export const OBJECTDEFAULTPROPERTIES = {
   borderColor: '#00c3f9',
-  cornerColor: '#00c3f9',
-  cornerStrokeColor: '#ffffff',
-  cornerStyle: 'square',
-  minScaleLimit: 0,
-  lockScalingFlip: true,
-  selectionDashArray: [5, 0],
-  borderDashArray: [5, 5],
-  cornerDashArray: [2, 0],
-  borderScaleFactor: 1,
-  cornerSize: 15,
-  transparentCorners: false,
-  centeredRotation: true,
-  // perPixelTargetFind: true
+    cornerColor: '#00c3f9',
+    cornerStrokeColor: '#ffffff',
+    // cornerStyle: 'circle',
+    minScaleLimit: 0,
+    lockScalingFlip: true,
+    selectionDashArray: [5, 0],
+    borderDashArray: [5, 5],
+    cornerDashArray: [2, 0],
+    borderScaleFactor: 1,
+    cornerSize: 15,
+    transparentCorners: false,
+    centeredRotation: true
 };
 
 export const CANVASCONFIGOPTIONS = {
@@ -447,8 +446,8 @@ export const CANVASCONFIGOPTIONS = {
   preserveObjectStacking: true,
   originX: 'center',
   originY: 'center',
-  width: 500,
-  _width: 500,
+  width: 600,
+  _width: 600,
   height: 500,
   _height: 500,
   fireRightClick: true, // <-- enable firing of right click events

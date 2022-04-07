@@ -1,0 +1,28 @@
+<div class="row m-0 p-4 justify-content-between align-items-end">
+    <div class="col-5">
+        <label for="height">Height</label>
+        <input type="number" [(ngModel)]="productHeight" placeholder="Height">
+        <!-- <mat-form-field appearance="outline">
+            <mat-label>Height</mat-label>
+            <input matInput placeholder="Height">
+        </mat-form-field> -->
+    </div>
+    <div class="col-5">
+        <!-- <mat-form-field appearance="outline">
+            <mat-label>Width</mat-label>
+            <input matInput placeholder="Width">
+        </mat-form-field> -->
+        <label for="width">Width</label>
+        <input type="number" [(ngModel)]="productWidth" placeholder="Width">
+    </div>
+    <div class="col-7 mt-4">
+        <label for="product_type">Select Product Type : </label>
+        <select name="product_type" (change)="selectOption($event.target)" id="product_type">
+           <option value="corner">Corner</option>
+           <option value="gandolla">Gandolla</option>
+       </select>
+    </div>
+    <div class="col-5">
+        <button class="btn btn-primary" (click)="submit()">Submit</button>
+    </div>
+</div>

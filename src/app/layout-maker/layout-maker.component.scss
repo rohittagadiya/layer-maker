@@ -18,10 +18,11 @@
     width: 300px;
     height: 100%;
     overflow: auto;
+    padding: 10px;
 }
 
 .canvas-wrapper {
-    height: calc(100% - 5px);
+    height: calc(100vh - 5px);
     // display: flex;
     flex-wrap: wrap !important;
     align-items: flex-end;
@@ -100,7 +101,7 @@
 }
 
 .sticker-item-container {
-    max-height: calc(100% - 160px);
+    max-height: calc(100% - 260px);
 }
 
 .margin-bottom {
@@ -455,4 +456,10 @@ mat-form-field {
 .lft-sidebr-tt-cntnt::-webkit-scrollbar-thumb {
     background-color: #ffffff;
     border-radius: 15px;
+}
+
+.size-dropdown {
+    height: 35px;
+    width: -webkit-fill-available;
+    padding: 0 10px;
 }
