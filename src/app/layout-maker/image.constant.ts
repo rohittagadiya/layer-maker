@@ -285,7 +285,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 3,
+    strokeWidth: 2,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     rx: 0,
     ry: 0,
@@ -295,7 +295,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 10,
+    strokeWidth: 3,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     rx: 0,
     ry: 0,
@@ -305,7 +305,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 15,
+    strokeWidth: 4,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     rx: 0,
     ry: 0,
@@ -324,7 +324,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 3,
+    strokeWidth: 2,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     strokeLineCap: 'round',
     rx: 10,
@@ -335,7 +335,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 10,
+    strokeWidth: 3,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     strokeLineCap: 'round',
     rx: 10,
@@ -346,7 +346,7 @@ export const BASICSHAPELIST = [
     type: 'Rect',
     fill: '#0F193400',
     stroke: '#0F1934',
-    strokeWidth: 15,
+    strokeWidth: 4,
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     strokeLineCap: 'round',
     rx: 10,
@@ -366,7 +366,7 @@ export const BASICSHAPELIST = [
     fill: '#0F193400',
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     stroke: '#0F1934',
-    strokeWidth: 3,
+    strokeWidth: 2,
   },
   {
     thumbnail: './assets/shapes/circle-stroke-2.png',
@@ -375,7 +375,7 @@ export const BASICSHAPELIST = [
     fill: '#0F193400',
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     stroke: '#0F1934',
-    strokeWidth: 10,
+    strokeWidth: 3,
   },
   {
     thumbnail: './assets/shapes/circle-stroke-3.png',
@@ -384,7 +384,7 @@ export const BASICSHAPELIST = [
     fill: '#0F193400',
     shadow: { color: '#000000ff', blur: 0, offsetX: 0, offsetY: 0 },
     stroke: '#0F1934',
-    strokeWidth: 15,
+    strokeWidth: 4,
   },
   {
     thumbnail: './assets/shapes/line.png',
@@ -400,7 +400,7 @@ export const BASICSHAPELIST = [
     fill: '#0F1934',
     coOrds: [10, 10, 200, 10],
     stroke: '#0F1934',
-    strokeWidth: 10,
+    strokeWidth: 2,
   },
   {
     thumbnail: './assets/shapes/dash-line.png',
@@ -408,7 +408,7 @@ export const BASICSHAPELIST = [
     fill: '#0F1934',
     coOrds: [10, 10, 200, 10],
     stroke: '#0F1934',
-    strokeWidth: 5,
+    strokeWidth: 2,
     strokeDashArray: [10, 5],
   },
   {
@@ -417,7 +417,7 @@ export const BASICSHAPELIST = [
     fill: '#0F1934',
     coOrds: [10, 10, 200, 10],
     stroke: '#0F1934',
-    strokeWidth: 10,
+    strokeWidth: 3,
     strokeDashArray: [10, 5],
   },
 ];
@@ -435,7 +435,8 @@ export const OBJECTDEFAULTPROPERTIES = {
     borderScaleFactor: 1,
     cornerSize: 15,
     transparentCorners: false,
-    centeredRotation: true
+    // centeredRotation: false,
+    hasRotatingPoint: false,
 };
 
 export const CANVASCONFIGOPTIONS = {

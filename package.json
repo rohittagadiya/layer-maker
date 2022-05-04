@@ -24,7 +24,9 @@
     "@ng-bootstrap/ng-bootstrap": "^10.0.0",
     "bootstrap": "^4.5.0",
     "fabric": "^5.2.1",
+    "fabric-customise-controls": "^2.0.6-beta",
     "fabric-history": "^1.6.0",
+    "jspdf": "^2.5.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

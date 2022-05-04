@@ -63,8 +63,10 @@
         </mat-accordion>
     </div>
     <div class="canvas-wrapper" id="canvas-wrapper">
-        <div>
-            <p class="mb-0">{{canvas.width}} X {{canvas.height}} PX</p>
+        <div class="d-flex mb-2">
+            <p class="mb-0 mr-2">{{canvas.width}} X {{canvas.height}} PX</p>
+            <button class="btn btn-sm btn-primary mr-2" (click)="clearCanvas()">Clear Canvas</button>
+            <button class="btn btn-sm btn-primary" (click)="downloadMap()">Download Map</button>
         </div>
         <canvas id="canvas" class="shadow canvas-style"></canvas>
     </div>
@@ -84,8 +86,23 @@
                 </tr>
             </tbody>
         </table>
-        <mat-checkbox [(ngModel)]="paste_new_object_below">Copy new element below
-        </mat-checkbox>
+        <!-- <mat-checkbox [(ngModel)]="paste_new_object_below">Copy new element below
+        </mat-checkbox> -->
+        <div class="row align-items-center" *ngIf="selected">
+            <div class="col-6">
+                <button class="btn btn-info btn-sm" (click)="clone('left')">Copy Left</button>
+            </div>
+            <div class="col-6 my-2">
+                <button class="btn btn-info btn-sm" (click)="clone('right')">Copy Right</button>
+            </div>
+            <div class="col-6">
+                <button class="btn btn-info btn-sm" (click)="clone('top')">Copy Top</button>
+            </div>
+            <div class="col-6">
+                <button class="btn btn-info btn-sm" (click)="clone('bottom')">Copy Bottom</button>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-sm my-3" (click)="rotateSelected()" *ngIf="selected">Rotate 90</button>
     </div>
 </div>
 

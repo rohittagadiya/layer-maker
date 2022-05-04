@@ -9,6 +9,7 @@ import {
 
 import { fabric } from 'fabric';
 import 'fabric-history';
+import jspdf from 'jspdf';
 import { HttpService } from '../services/http.service';
 import * as $ from 'jquery';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -251,7 +252,7 @@ export class LayoutMakerComponent implements OnInit {
   }
 
   drawRuler() {
-    var grid = 20;
+    var grid = 24;
     var width = this.canvas.width;
     var measurementThickness = 60;
     this.canvas.add(
@@ -286,7 +287,7 @@ export class LayoutMakerComponent implements OnInit {
     for (var i = 0; i < width / grid; i++) {
       var offset = i * grid,
         location1 = offset + measurementThickness,
-        isFoot = (i + 1) % 12 === 0 && i !== 0;
+        isFoot = (i) % 12 === 0 && i !== 0;
 
       // Grid ------------
 
@@ -326,6 +327,7 @@ export class LayoutMakerComponent implements OnInit {
           top: location1,
           fontSize: 12,
           fontFamily: 'san-serif',
+          selectable: false,
         })
       );
 
@@ -349,6 +351,7 @@ export class LayoutMakerComponent implements OnInit {
             top: location1 + 4,
             fontSize: 12,
             fontFamily: 'san-serif',
+            selectable: false,
           })
         );
       }
@@ -371,6 +374,7 @@ export class LayoutMakerComponent implements OnInit {
           top: measurementThickness - tickSize * 2 - 4,
           fontSize: 12,
           fontFamily: 'san-serif',
+          selectable: false,
         })
       );
 
@@ -392,12 +396,38 @@ export class LayoutMakerComponent implements OnInit {
             top: measurementThickness - tickSizeFoot - 7,
             fontSize: 12,
             fontFamily: 'san-serif',
+            selectable: false,
           })
         );
       }
 
       count++;
     }
+  }
+
+  clearCanvas() {
+    this.canvas.clear();
+    this.drawRuler();
+  }
+
+  downloadMap() {
+    var tp = false;
+    // this.canvas.backgroundColor = '#ffffff';
+    // don't change multiplyer otherwise gradient color will Disperse.
+    this.canvas.renderAll();
+    let image = this.canvas.toDataURL({ format: 'jpg', multiplier: 1 });
+    // let imagehd = changeDpiDataUrl(image, EXPORT_DPI);
+    let image_name = new Date().getTime();
+    let pageHeight, pageWidth, margin, canvasHeight, canavsWidth;
+    let tmpheight, tmpwidth;
+    tmpheight = 500;
+    tmpwidth = 500;
+    pageHeight = canvasHeight = tmpheight / 300;
+    pageWidth = canavsWidth = tmpwidth / 300;
+    margin = 0;
+    var doc = new jspdf('p', 'in', [pageWidth, pageHeight]);
+    doc.addImage(image, 'JPEG', margin, margin, canavsWidth, canvasHeight);
+    doc.save(image_name + '.pdf');
   }
 
   addPhoto() {
@@ -465,25 +495,54 @@ export class LayoutMakerComponent implements OnInit {
     this.drawRuler();
   }
 
-  async clone() {
+  async clone(position: string = 'left') {
     console.log('IN FUNCTION');
     let activeObject = this.canvas.getActiveObject();
-      // activeGroup = this.canvas.getActiveGroup();
-    let cloneobject
+    // activeGroup = this.canvas.getActiveGroup();
+    let cloneobject;
     if (activeObject) {
       cloneobject = fabric.util.object.clone(activeObject);
-      console.log("cloneobject : ",cloneobject, cloneobject.left, cloneobject.width, cloneobject.top);
+      console.log(
+        'cloneobject : ',
+        cloneobject,
+        cloneobject.left,
+        cloneobject.width,
+        cloneobject.top
+      );
 
-      let left,top;
+      let left, top;
 
-      if (this.paste_new_object_below) {
-        left = cloneobject.left , 
-        top = cloneobject.top+ (cloneobject.height * cloneobject.scaleY)
-      }else {
-        left = cloneobject.left + (cloneobject.width * cloneobject.scaleX), 
-        top = cloneobject.top
+      switch (position) {
+        case 'left':
+          (left = cloneobject.left + cloneobject.width * cloneobject.scaleX),
+            (top = cloneobject.top);
+          break;
+        case 'right':
+          (left = cloneobject.left - cloneobject.width * cloneobject.scaleX),
+            (top = cloneobject.top);
+          break;
+        case 'top':
+          (left = cloneobject.left),
+            (top = cloneobject.top - cloneobject.height * cloneobject.scaleY);
+          break;
+        case 'bottom':
+          (left = cloneobject.left),
+            (top = cloneobject.top + cloneobject.height * cloneobject.scaleY);
+          break;
+
+        default:
+          (left = cloneobject.left + cloneobject.width * cloneobject.scaleX),
+            (top = cloneobject.top);
+          break;
       }
 
+      // if (this.paste_new_object_below) {
+      //   (left = cloneobject.left),
+      //     (top = cloneobject.top + cloneobject.height * cloneobject.scaleY);
+      // } else {
+      //   (left = cloneobject.left + cloneobject.width * cloneobject.scaleX),
+      //     (top = cloneobject.top);
+      // }
 
       cloneobject.set({
         left: left,
@@ -501,9 +560,8 @@ export class LayoutMakerComponent implements OnInit {
   rotateObjAfterAdded(object, angle) {
     object.rotate(angle);
     object.setCoords();
-}
-
-
+    this.canvas.renderAll();
+  }
 
   // convertAllSizeFirst(item) {
   //   switch (item.sizeType) {
@@ -705,6 +763,7 @@ export class LayoutMakerComponent implements OnInit {
         if (shape.shadow) {
           // circle.setShadow(shape.shadow);
         }
+        circle.setControlsVisibility({ mtr: false });
         // this.extend(circle, this.randomId());
         this.canvas.add(circle);
         break;
@@ -719,6 +778,8 @@ export class LayoutMakerComponent implements OnInit {
         option['width'] = 100;
         option['top'] = 100;
         option['left'] = 100;
+        option['strokeUniform'] = true;
+        option['noScaleCache'] = false;
         if (shape.strokeLineCap) option['strokeLineCap'] = shape.strokeLineCap;
         if (shape.rx) option['rx'] = shape.rx;
         if (shape.ry) option['ry'] = shape.ry;
@@ -726,6 +787,7 @@ export class LayoutMakerComponent implements OnInit {
         if (shape.shadow) {
           // rect.setShadow(shape.shadow);
         }
+        rect.setControlsVisibility({ mtr: false });
         // this.extend(rect, this.randomId());
         this.canvas.add(rect);
         break;
@@ -849,73 +911,112 @@ export class LayoutMakerComponent implements OnInit {
       that = this,
       img_src = image_details.image;
     // add image as sticker
-    fabric.util.loadImage(
+    // fabric.util.loadImage(
+    //   img_src,
+    //   function (imgObj) {
+    //     let width = imgObj.width;
+    //     let height = imgObj.height;
+    //     // Image should added in maximum of canvas's 70% area
+    //     let maxImageWidth = (that.canvas.width * 70) / 100;
+    //     let maxImageHeight = (that.canvas.height * 70) / 100;
+    //     imgObj.width = image_details.width;
+    //     imgObj.height = image_details.height;
+    //     // }
+    //     var image = new fabric.Image(imgObj);
+    //     image.crossOrigin = 'anonymous';
+    //     image.set({
+    //       left: 60,
+    //       top: 60,
+    //       angle: 0,
+    //       padding: 0,
+    //       // cornersize: 10,
+    //       hasRotatingPoint: true,
+    //       // width: image_details.width,
+    //       // height: image_details.height
+    //     });
+    //     image.scaleToHeight(image_details.height);
+    //     image.scaleToWidth(image_details.width);
+    //     var customAttribute = {};
+    //     image.toObject = function () {
+    //       return {
+    //         product_type: image_details.product_type,
+    //       };
+    //     };
+    //     // image.toObject = (function (toObject) {
+    //     //   return function () {
+    //     //     return fabric.util.object.extend(toObject.call(this), customAttribute);
+    //     //   };
+    //     // })(image.toObject);
+    //     // id = that.randomId();
+    //     that.extend(image, id);
+    //     setTimeout(() => {
+    //       that.canvas.add(image);
+    //       that.canvas.renderAll();
+    //       console.log(that.canvas);
+    //     }, 500);
+    //   }, {
+    //     crossOrigin: 'anonymous'
+    // }
+    // );
+    fabric.Image.fromURL(
       img_src,
-      function (imgObj) {
-        let width = imgObj.width;
-        let height = imgObj.height;
-        // Image should added in maximum of canvas's 70% area
-        let maxImageWidth = (that.canvas.width * 70) / 100;
-        let maxImageHeight = (that.canvas.height * 70) / 100;
-        console.log(
-          'height > maxImageHeight : ',
-          height,
-          maxImageHeight,
-          (that.canvas.width * 70) / 100
-        );
-        // if (height > maxImageHeight) {
-        //   console.log("IF 1")
-        //   let scale = maxImageHeight / height;
-        //   imgObj.width = imgObj.width * scale;
-        //   imgObj.height = imgObj.height * scale;
-        //   width = imgObj.width;
-        // }
-        // console.log("width > maxImageWidth : ", width , maxImageWidth)
-        // if (width > maxImageWidth) {
-        //   console.log("IF 1=2")
-
-        // let scale = maxImageWidth / width;
-        // imgObj.width = imgObj.width * scale;
-        // imgObj.height = imgObj.height * scale;
-        imgObj.width = image_details.width;
-        imgObj.height = image_details.height;
-        // }
-        var image = new fabric.Image(imgObj);
-        image.crossOrigin = 'anonymous';
-        image.set({
-          left: 60,
-          top: 60,
-          angle: 0,
-          padding: 0,
-          // cornersize: 10,
-          hasRotatingPoint: true,
-          // width: image_details.width,
-          // height: image_details.height
-        });
-        image.scaleToHeight(image_details.height);
-        image.scaleToWidth(image_details.width);
-        var customAttribute = {};
+      function (image) {
+        var img1 = image;
+        img1.crossOrigin = 'anonymous';
         image.toObject = function () {
           return {
             product_type: image_details.product_type,
           };
         };
-        // image.toObject = (function (toObject) {
-        //   return function () {
-        //     return fabric.util.object.extend(toObject.call(this), customAttribute);
-        //   };
-        // })(image.toObject);
-        // id = that.randomId();
-        that.extend(image, id);
-        setTimeout(() => {
-          that.canvas.add(image);
-          that.canvas.renderAll();
-          console.log(that.canvas);
-        }, 500);
+        image.scale(0.1);
+        img1.setControlsVisibility({ mtr: false });
+        //   img1.set({
+        //     top: 100,
+        //     left: 100 ,
+        //     width: image_details.width * img1.scaleX,
+        //   height: image_details.height,
+        // });
+        // id = this.randomId();
+        // this.extend(img1, id);
+        that.canvas.add(img1);
+        that.canvas.renderAll();
       },
-      null
+      {
+        crossOrigin: 'anonymous',
+        left: 60,
+        top: 60,
+        angle: 0,
+        padding: 0,
+        // cornersize: 10,
+        hasRotatingPoint: false,
+        // width: image_details.width,
+        // height: image_details.height,
+      }
     );
-    return id;
+
+    // var imgObj = new Image();
+
+    //               imgObj.crossOrigin = "Anonymous";
+    //               imgObj.src = img_src
+
+    //               imgObj.onload = function () {
+    //                   // start fabricJS stuff
+    //                   imgObj.width = 100
+    //                   imgObj.height = 100
+
+    //                   var image = new fabric.Image(imgObj);
+    //                   image.set({
+    //                       top: 60,
+    //                       left: 60 ,
+    //                   });
+    //                   image.toObject = function () {
+    //                           return {
+    //                             product_type: image_details.product_type,
+    //                           };
+    //                         };
+    //                         that.canvas.add(image);
+    //         that.canvas.renderAll();
+    //                 }
   }
 
   getProductCount() {
@@ -949,5 +1050,10 @@ export class LayoutMakerComponent implements OnInit {
     // var result = Object.keys(count).map((key) => [{type: key, count : count[key]}]);
 
     // console.log(result);
+  }
+
+  rotateSelected() {
+    console.log('this.selected : ', this.selected);
+    this.rotateObjAfterAdded(this.selected[0], this.selected[0].angle + 90);
   }
 }
